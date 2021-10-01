@@ -21,7 +21,6 @@ export class JogadoresController {
         @Query('email') email: string
     ) : Promise<Jogador[] | Jogador> {
         if (email) {
-            console.log(email)
             return this.jogadoresService.consultarJogadorPeloEmail(email);
         } else {
             return this.jogadoresService.consultarTodosJogadores();
