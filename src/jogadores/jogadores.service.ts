@@ -55,6 +55,6 @@ export class JogadoresService
 
     async deletarJogador(email: string): Promise<void>
     {
-        return await this.jogadorModel.remove({email}).exec();
+        await this.jogadorModel.deleteOne({email}).exec();
     }
 }
