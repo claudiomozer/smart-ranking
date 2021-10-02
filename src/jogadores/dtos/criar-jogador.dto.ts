@@ -2,7 +2,6 @@ import { IsEmail, IsNotEmpty, validate } from 'class-validator'
 
 export class CriarJogadorDto
 {
-
     @IsNotEmpty()
     readonly telefone: string;
     
