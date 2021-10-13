@@ -74,4 +74,14 @@ export class CategoriasService
         categoriaEncontrada.jogadores.push(idJogador);
         await this.categoriaModel.findOneAndUpdate({categoria}, {$set: categoriaEncontrada}).exec();
     }
+
+    async buscaCategoriaPeloJogadorId(jogadorId: string): Promise<Categoria>
+    {
+        var jogadorIds: string[] = [jogadorId];
+        return await this.categoriaModel
+            .findOne()
+            .where('jogadores')
+            .in(jogadorIds)
+            .exec();
+    }
 }
