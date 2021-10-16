@@ -6,7 +6,9 @@ export class DesafioStatusValidator implements ValidatorConstraintInterface
 {
     validate(status: DesafioStatus, args: ValidationArguments)
     {
-        return (status !== DesafioStatus.PENDENTE && Object.values(DesafioStatus).includes(status));
+        return (status !== DesafioStatus.PENDENTE 
+            && status !== DesafioStatus.REALIZADO 
+            && Object.values(DesafioStatus).includes(status));
     }
 
     defaultMessage(args: ValidationArguments)
