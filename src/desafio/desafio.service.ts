@@ -4,24 +4,28 @@ import { Model } from 'mongoose';
 import { CategoriasService } from 'src/categorias/categorias.service';
 import { Jogador } from 'src/jogadores/interfaces/jogador.interface';
 import { JogadoresService } from 'src/jogadores/jogadores.service';
+import { AtribuirPartidaDesafioDto } from './dtos/atribuir-partida-desafio.dto';
 import { AtualizarDesafioDto } from './dtos/atualizar-desafio.dto';
 import { CriarDesafioDto } from './dtos/criar-desafio-dto';
 import { DesafioStatus } from './interfaces/desafio-status.enum';
-import { Desafio } from './interfaces/desafio.interface';
+import { Desafio, Partida } from './interfaces/desafio.interface';
 
 @Injectable()
 export class DesafioService
 {
     private readonly desafioModel : Model<Desafio>;
+    private readonly partidaModel : Model<Partida>;
     private readonly jogadoresService: JogadoresService;
     private readonly categoriasService: CategoriasService;
     
     constructor (
         @InjectModel('Desafio') desafioModel: Model<Desafio>,
+        @InjectModel('Partida') partidaModel: Model<Partida>,
         jogadoresService: JogadoresService,
         categoriasService: CategoriasService
     ) {
         this.desafioModel = desafioModel;
+        this.partidaModel = partidaModel;
         this.jogadoresService = jogadoresService;
         this.categoriasService = categoriasService;
     }
@@ -63,6 +67,32 @@ export class DesafioService
         await newDesafio.save();
     }
 
+    async atribuirPartidaDesafio(id: string, atribuirPartidaDesafioDto: AtribuirPartidaDesafioDto) : Promise<void>
+    {
+        const desafioEncontrado = await this.buscarDesafioPeloId(id);
+
+        const { jogadores } = desafioEncontrado;
+        const { def } = atribuirPartidaDesafioDto;
+
+        const jogadorSolicitanteEncontrado = jogadores.find( jogador => jogador._id.toString() === def._id );
+        if (!jogadorSolicitanteEncontrado) {
+            throw new BadRequestException(`O solicitante ${def._id} deve ser um dos jogadores do desafio.`);
+        }
+
+        let partidaData = {
+            ...atribuirPartidaDesafioDto,
+            categoria: desafioEncontrado.categoria,
+            jogadores: desafioEncontrado.jogadores.map(jogador => jogador._id.toString())
+        };
+
+        const newPartida = new this.partidaModel(partidaData);
+        await newPartida.save();
+
+        desafioEncontrado.status = DesafioStatus.REALIZADO;
+        desafioEncontrado.partida = newPartida;
+        await desafioEncontrado.save();
+    }
+
     async consultarTodosDesafios(): Promise<Desafio[]>
     {
         return await this.desafioModel.find().populate("jogadores").exec();
@@ -92,6 +122,20 @@ export class DesafioService
             .where('jogadores')
             .in(jogadoresIds)
             .exec();
+        return desafioEncontrado;
+    }
+
+    private async buscarDesafioPeloId(id: string) : Promise<Desafio>
+    {
+        const desafioEncontrado = await this.desafioModel
+            .findOne({_id: id})
+            .populate('jogadores')
+            .exec();
+        
+        if (!desafioEncontrado) {
+            throw new NotFoundException(`Nenhum desafio encontrado para o id ${id}`);
+        }
+
         return desafioEncontrado;
     }
 

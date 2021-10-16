@@ -7,10 +7,12 @@ import { JogadoresService } from 'src/jogadores/jogadores.service';
 import { DesafioController } from './desafio.controller';
 import { DesafioService } from './desafio.service';
 import { DesafioSchema } from './interfaces/desafio.schema';
+import { PartidaSchema } from './interfaces/partida.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Desafio', schema: DesafioSchema }]),
+    MongooseModule.forFeature([{ name: 'Partida', schema: PartidaSchema }]),
     MongooseModule.forFeature([{ name: 'Categoria', schema: CategoriaSchema }]),
     MongooseModule.forFeature([{ name: 'Jogador', schema: JogadorSchema }])
   ],
